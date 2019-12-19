@@ -1,9 +1,12 @@
 #!/bin/bash
 
-ln -sd /node_modules /workspace/node_modules
+mv /node_modules /workspace/
 
 . /dev_environment/bin/activate
 
 #flask dbcreate
-npm run dev
-flask run
+#npm run dev
+#flask run
+
+
+sleep 1000000

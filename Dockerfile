@@ -52,6 +52,8 @@ RUN echo "Installing required packages" && \
 
 WORKDIR /workspace
 
+VOLUME /workspace
+
 COPY --chown=user entrypoint.sh /
 
 COPY --chown=user --from=builder /dev_environment /dev_environment

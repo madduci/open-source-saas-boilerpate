@@ -23,6 +23,9 @@ services:
     build: 
       dockerfile: Dockerfile
       context: .
+    volumes: 
+      - ./opensaas:/workspace
+    user: root
     ports: 
       - "5000:5000"
     environment: 
