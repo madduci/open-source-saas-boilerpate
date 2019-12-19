@@ -1,0 +1,38 @@
+FROM debian:buster AS npm-builder
+
+RUN echo "Installing required packages" && \
+    apt-get update && \
+    apt-get install -y \
+        npm \
+        nodejs && \
+    mkdir -p /workspace && \
+    echo "Add user" && \
+    useradd -ms /bin/bash user && \
+    chown -R user /workspace
+
+COPY --chown=user opensaas /workspace/
+
+WORKDIR /workspace
+
+USER user
+
+RUN virtualenv -p python3 /workspace/environment && \
+    npm install
+
+FROM debian:buster
+
+RUN echo "Installing required packages" && \
+    apt-get update && \
+    apt-get install -y \
+        libpq-dev && \
+    echo "Add user" && \
+    useradd -ms /bin/bash user && \
+    chown -R user /workspace
+
+WORKDIR /workspace
+
+COPY --chown=user --from=npm-builder /workspace /workspace/
+
+USER user
+
+ENTRYPOINT [ "bash", "-c", "npm run dev" ]

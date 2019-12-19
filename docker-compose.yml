@@ -1,0 +1,56 @@
+version: "2.4"
+
+services: 
+  db:
+    image: postgres:11-alpine
+    environment: 
+      - POSTGRES_PASSWORD="SUPERSECRET"
+      - POSTGRES_USER="opensaas"
+      - POSTGRES_DB="opensaas"
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    networks: 
+      - backend
+  backend:
+    image: backend:latest
+      build: 
+        dockerfile: Dockerfile.backend
+        context: .
+    environment: 
+      - FLASK_APP=application
+      - db_url='postgres://opensaas:SUPERSECRET@db:port/opensaas'
+      #  date +%s | sha256sum | base64 | head -c 32 ; echo
+      - JWT_SECRET_KEY="YjhlZDY0YzE1MjM0NzlmZDRiOTE0YjE3"
+      - SECRET_KEY='YjhlZDY0YzE1MjM0NzlmZDRiOTE0YjE3'
+      #- MAIL_SERVER = 'mail server'
+      #- MAIL_PORT = Number (like 465)
+      #- MAIL_USE_SSL="True"
+      #- MAIL_USE_TLS="True"
+      #- MAIL_USERNAME='your email'
+      #- MAIL_PASSWORD = 'your password'
+      - ADMIN_EMAIL="admin@example.com"
+      - MAIL_DEFAULT_SENDER="admin@example.com"
+    networks: 
+      - frontend
+      - backend
+    depends_on: 
+      - db
+  frontend:
+    image: frontend:latest
+      build: 
+        dockerfile: Dockerfile.frontend
+        context: .
+    ports: 
+      - "5000:5000"
+    depends_on: 
+      - frontend
+    networks: 
+      - frontend
+      - backend
+
+networks: 
+  backend:
+  frontend:
+
+volumes:
+  dbdata:
