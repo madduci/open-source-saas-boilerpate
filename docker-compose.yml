@@ -4,50 +4,48 @@ services:
   db:
     image: postgres:11-alpine
     environment: 
-      - POSTGRES_PASSWORD="SUPERSECRET"
-      - POSTGRES_USER="opensaas"
-      - POSTGRES_DB="opensaas"
+      #  date +%s | sha256sum | base64 | head -c 32 ; echo
+      POSTGRES_PASSWORD: OWExYzlhYzE3MTgxMDNjNDYxNTYxYmRi
+      POSTGRES_USER: postgres
+      POSTGRES_DB: opensaas
     volumes:
       - dbdata:/var/lib/postgresql/data
     networks: 
       - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres && psql -lqt | cut -d \\| -f 1 | grep -qw opensaas"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
   backend:
     image: backend:latest
-      build: 
-        dockerfile: Dockerfile.backend
-        context: .
+    build: 
+      dockerfile: Dockerfile
+      context: .
+    ports: 
+      - "5000:5000"
     environment: 
-      - FLASK_APP=application
-      - db_url='postgres://opensaas:SUPERSECRET@db:port/opensaas'
+      FLASK_APP: application
+      db_url: postgres://postgres:OWExYzlhYzE3MTgxMDNjNDYxNTYxYmRi@db:5432/opensaas
       #  date +%s | sha256sum | base64 | head -c 32 ; echo
-      - JWT_SECRET_KEY="YjhlZDY0YzE1MjM0NzlmZDRiOTE0YjE3"
-      - SECRET_KEY='YjhlZDY0YzE1MjM0NzlmZDRiOTE0YjE3'
+      JWT_SECRET_KEY: YjhlZDY0YzE1MjM0NzlmZDRiOTE0YjE3
+      #  date +%s | sha256sum | base64 | head -c 32 ; echo
+      SECRET_KEY: YjhlZDY0YzE1MjM0NzlmZDRiOTE0YjE3
       #- MAIL_SERVER = 'mail server'
       #- MAIL_PORT = Number (like 465)
       #- MAIL_USE_SSL="True"
       #- MAIL_USE_TLS="True"
       #- MAIL_USERNAME='your email'
       #- MAIL_PASSWORD = 'your password'
-      - ADMIN_EMAIL="admin@example.com"
-      - MAIL_DEFAULT_SENDER="admin@example.com"
+      ADMIN_EMAIL: admin@example.com
+      MAIL_DEFAULT_SENDER: admin@example.com
     networks: 
       - frontend
       - backend
     depends_on: 
       - db
-  frontend:
-    image: frontend:latest
-      build: 
-        dockerfile: Dockerfile.frontend
-        context: .
-    ports: 
-      - "5000:5000"
-    depends_on: 
-      - frontend
-    networks: 
-      - frontend
-      - backend
-
+  
 networks: 
   backend:
   frontend:
